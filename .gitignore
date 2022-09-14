@@ -3,3 +3,6 @@
 
 # Virtual environnement
 env/
+
+# Django
+__pycache__/
