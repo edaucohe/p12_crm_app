@@ -19,9 +19,11 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from users.views import SignUpViewSet, UserViewSet
+from customers.views import CustomerViewSet
 
 router = DefaultRouter()
-router.register(r'users', UserViewSet, basename='user')
+router.register(r'users', UserViewSet, basename='users')
+router.register(r'customers', CustomerViewSet, basename='customers')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
