@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.serializers import ModelSerializer, CharField, EmailField, ValidationError
 from rest_framework.validators import UniqueValidator
@@ -7,13 +8,12 @@ from rest_framework.validators import UniqueValidator
 class UserSerializer(ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ['id', 'first_name', 'email', 'password']
+        fields = ['id', 'username', 'role']
 
 
 class SignUpSerializer(ModelSerializer):
-    # email = EmailField(required=False, validators=[UniqueValidator(queryset=get_user_model().objects.all())])
-    password = CharField(write_only=True, required=True, validators=[validate_password])
-    password2 = CharField(write_only=True, required=True)
+    password = CharField(required=True, validators=[validate_password])
+    password2 = CharField(required=True)
 
     class Meta:
         model = get_user_model()
