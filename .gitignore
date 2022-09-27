@@ -6,3 +6,6 @@ env/
 
 # Django
 __pycache__/
+
+# Internal folders
+references/
