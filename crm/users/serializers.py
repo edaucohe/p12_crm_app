@@ -41,3 +41,9 @@ class SignUpSerializer(ModelSerializer):
         user.save()
 
         return user
+
+
+# class UserDetailsSerializer(ModelSerializer):
+#     class Meta:
+#         model = get_user_model()
+#         fields = ['id', 'username', 'role']
