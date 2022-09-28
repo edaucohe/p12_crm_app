@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.serializers import ModelSerializer, CharField
 
 from customers.models import Customer
-from users.serializers import UserDetailsSerializer
+# from users.serializers import UserDetailsSerializer
 
 
 class CustomerSerializer(ModelSerializer):
