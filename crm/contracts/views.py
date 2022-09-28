@@ -24,7 +24,8 @@ class ContractViewSet(ModelViewSet):
         current_user = request.user
         customer = Customer.objects.filter(pk=customers_pk).get()
 
-        if not customer.user == current_user:
+        sale_user_can_see_contracts = services.is_a_customer_assigned(user=current_user, customer=customer)
+        if not sale_user_can_see_contracts:
             return Response({'message': 'Customer is not assigned to you'}, status=status.HTTP_403_FORBIDDEN)
 
         contracts = [contract for contract in Contract.objects.filter(customer=customer, user=current_user)]
@@ -39,8 +40,9 @@ class ContractViewSet(ModelViewSet):
         current_user = request.user
         customer = Customer.objects.filter(pk=customers_pk).get()
 
-        if not customer.user == current_user:
-            return Response({'message': 'Customer is not assigned to you'}, status=status.HTTP_403_FORBIDDEN)
+        sale_user_can_create_contract = services.is_a_customer_assigned(user=current_user, customer=customer)
+        if not sale_user_can_create_contract:
+            return Response({'message': 'Customer is not assigned to you.'}, status=status.HTTP_403_FORBIDDEN)
 
         user_can_create_contract = services.is_sale_team_user(user=current_user)
         if user_can_create_contract:
@@ -61,3 +63,41 @@ class ContractViewSet(ModelViewSet):
         else:
             return Response({'message': 'You are not part of sales team'},
                             status=status.HTTP_403_FORBIDDEN)
+
+    def update(self, request, customers_pk=None, pk=None, *args, **kwargs):
+        try:
+            current_user = request.user
+            customer = Customer.objects.filter(pk=customers_pk).get()
+            contract = Contract.objects.filter(pk=pk).get()
+
+            if not contract.customer == customer:
+                return Response({'message': 'Contract is not assigned to current customer'}, status=status.HTTP_404_NOT_FOUND)
+
+            user_cannot_edit_customer = services.is_support_team_user(user=current_user)
+            if user_cannot_edit_customer:
+                return Response({'message': 'You are not part of sales team'},
+                                status=status.HTTP_403_FORBIDDEN)
+
+            sale_user_can_edit_contract = services.is_a_customer_assigned(user=current_user, customer=customer)
+            if not sale_user_can_edit_contract:
+                return Response({'message': 'Customer is not assigned to you.'}, status=status.HTTP_403_FORBIDDEN)
+
+            data = {
+                "amount": request.POST.get('amount', None),
+                "payment_due": request.POST.get('payment_due', None),
+                "status": request.POST.get('status', None),
+            }
+            serializer = self.serializer_class(
+                instance=contract,
+                data=data,
+                context={'user': current_user},
+                partial=True
+            )
+            if serializer.is_valid():
+                serializer.save()
+                return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except ObjectDoesNotExist:
+            return Response({'message': 'Customer or contract do not exist'}, status=status.HTTP_404_NOT_FOUND)
