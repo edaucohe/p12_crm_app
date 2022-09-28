@@ -16,3 +16,6 @@ class ContractSerializer(ModelSerializer):
             'customer',
             'user',
         ]
+
+    def create(self, validated_data):
+        return Contract.objects.create(**validated_data)
