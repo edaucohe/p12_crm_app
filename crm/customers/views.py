@@ -78,3 +78,20 @@ class CustomerViewSet(ModelViewSet):
         except ObjectDoesNotExist:
             return Response({'message': 'Customer does not exist'},
                             status=status.HTTP_404_NOT_FOUND)
+
+    def destroy(self, request, pk=None, *args, **kwargs):
+        try:
+            current_user = request.user
+            customer: Customer = self.get_object()
+
+            can_edit = \
+                current_user.is_management() or (current_user.is_sales() and customer.is_user_assigned(current_user))
+            if not can_edit:
+                return Response({'message': 'You are not authorize to edit this customer'},
+                                status=status.HTTP_403_FORBIDDEN)
+
+            return super(CustomerViewSet, self).destroy(request, pk, *args, **kwargs)
+
+        except ObjectDoesNotExist:
+            return Response({'message': 'Customer does not exist'},
+                            status=status.HTTP_404_NOT_FOUND)
