@@ -22,6 +22,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from users.views import SignUpViewSet, UserViewSet
 from customers.views import CustomerViewSet
 from contracts.views import ContractViewSet
+from events.views import EventViewSet
 
 router = DefaultRouter()
 # /users/   ||   /users/{id}/
@@ -30,8 +31,12 @@ router.register(r'users', UserViewSet, basename='users')
 router.register(r'customers', CustomerViewSet, basename='customers')
 
 # /customers/{id}/contracts/   ||   /customers/{id}/contracts/{id}
-contract_router = routers.NestedSimpleRouter(router, r'customers', lookup='customers')
-contract_router.register(r'contracts', ContractViewSet, basename='contract')
+customer_router = routers.NestedSimpleRouter(router, r'customers', lookup='customers')
+customer_router.register(r'contracts', ContractViewSet, basename='contracts')
+
+# /customers/{id}/contracts/{id}/events/   ||   /customers/{id}/contracts/{id}/events/{id}/
+contract_router = routers.NestedSimpleRouter(customer_router, r'contracts', lookup='contracts')
+contract_router.register(r'events', EventViewSet, basename='events')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -39,5 +44,6 @@ urlpatterns = [
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('signup/', SignUpViewSet.as_view(), name='signup'),
     path(r'', include(router.urls)),
+    path(r'', include(customer_router.urls)),
     path(r'', include(contract_router.urls)),
 ]
