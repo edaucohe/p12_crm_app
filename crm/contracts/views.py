@@ -24,9 +24,12 @@ class ContractViewSet(ModelViewSet):
         current_user = request.user
         customer = Customer.objects.filter(pk=customers_pk).get()
 
-        sale_user_can_see_contracts = services.is_a_customer_assigned(user=current_user, customer=customer)
-        if not sale_user_can_see_contracts:
-            return Response({'message': 'Customer is not assigned to you'}, status=status.HTTP_403_FORBIDDEN)
+        # sale_user_can_see_contracts = services.is_a_customer_assigned(user=current_user, customer=customer)
+        # if not sale_user_can_see_contracts:
+        #     return Response({'message': 'Customer is not assigned to you'}, status=status.HTTP_403_FORBIDDEN)
+
+        if not customer.is_user_assigned(current_user):
+            return Response({'message': 'You are not authorize to see contracts'}, status=status.HTTP_403_FORBIDDEN)
 
         contracts = [contract for contract in Contract.objects.filter(customer=customer, user=current_user)]
         contracts = sorted(contracts, key=lambda order_by: order_by.id)
@@ -40,12 +43,11 @@ class ContractViewSet(ModelViewSet):
         current_user = request.user
         customer = Customer.objects.filter(pk=customers_pk).get()
 
-        sale_user_can_create_contract = services.is_a_customer_assigned(user=current_user, customer=customer)
-        if not sale_user_can_create_contract:
-            return Response({'message': 'Customer is not assigned to you.'}, status=status.HTTP_403_FORBIDDEN)
+        if not customer.is_user_assigned(current_user):
+            return Response({'message': 'You are not authorize to create contracts'}, status=status.HTTP_403_FORBIDDEN)
 
-        user_can_create_contract = services.is_sale_team_user(user=current_user)
-        if user_can_create_contract:
+        # user_can_create_contract = services.is_sale_team_user(user=current_user)
+        if current_user.is_sales():
             data = {
                 "amount": request.POST.get('amount', None),
                 "payment_due": request.POST.get('payment_due', None),
@@ -71,25 +73,32 @@ class ContractViewSet(ModelViewSet):
             contract = Contract.objects.filter(pk=pk).get()
 
             if not contract.customer == customer:
-                return Response({'message': 'Contract is not assigned to current customer'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'message': 'Contract is not assigned to current customer'},
+                                status=status.HTTP_404_NOT_FOUND)
 
-            user_cannot_edit_customer = services.is_support_team_user(user=current_user)
-            if user_cannot_edit_customer:
-                return Response({'message': 'You are not part of sales team'},
+            # user_cannot_edit_customer = services.is_support_team_user(user=current_user)
+            # if user_cannot_edit_customer:
+            #     return Response({'message': 'You are not part of sales team'},
+            #                     status=status.HTTP_403_FORBIDDEN)
+            #
+            # sale_user_can_edit_contract = services.is_a_customer_assigned(user=current_user, customer=customer)
+            # if not sale_user_can_edit_contract:
+            #     return Response({'message': 'Customer is not assigned to you.'}, status=status.HTTP_403_FORBIDDEN)
+
+            can_edit = \
+                current_user.is_management() or (current_user.is_sales() and customer.is_user_assigned(current_user))
+            if not can_edit:
+                return Response({'message': 'You are not authorize to edit this customer'},
                                 status=status.HTTP_403_FORBIDDEN)
 
-            sale_user_can_edit_contract = services.is_a_customer_assigned(user=current_user, customer=customer)
-            if not sale_user_can_edit_contract:
-                return Response({'message': 'Customer is not assigned to you.'}, status=status.HTTP_403_FORBIDDEN)
-
-            data = {
-                "amount": request.POST.get('amount', None),
-                "payment_due": request.POST.get('payment_due', None),
-                "status": request.POST.get('status', None),
-            }
+            # data = {
+            #     "amount": request.POST.get('amount', None),
+            #     "payment_due": request.POST.get('payment_due', None),
+            #     "status": request.POST.get('status', None),
+            # }
             serializer = self.serializer_class(
                 instance=contract,
-                data=data,
+                data=request.data,
                 context={'user': current_user},
                 partial=True
             )

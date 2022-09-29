@@ -29,15 +29,7 @@ class CustomerViewSet(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         current_user = request.user
-        # user_data = {
-        #     "id": user.pk,
-        #     "username": user.username,
-        #     "role": user.role
-        # }
-        customer_status = Customer.status.field.choices[0][0]
-
-        user_can_add_potential_customer = services.is_sale_team_user(user=current_user)
-        if user_can_add_potential_customer:
+        if current_user.is_sales():
             data = {
                 "first_name": request.POST.get('first_name', None),
                 "last_name": request.POST.get('last_name', None),
@@ -45,11 +37,10 @@ class CustomerViewSet(ModelViewSet):
                 "phone": request.POST.get('phone', None),
                 "mobile": request.POST.get('mobile', None),
                 "company_name": request.POST.get('company_name', None),
-                # "employee_assigned": user.username,
-                # "employee_role": user.role,
-                "status": customer_status,
                 "user": current_user.pk,
                 }
+            # data = request.data | {"user": [current_user.pk]}
+            # data_requested = dict(request.data)
             serializer = self.serializer_class(data=data, context={'user': current_user})
             if serializer.is_valid():
                 serializer.save()
@@ -66,27 +57,15 @@ class CustomerViewSet(ModelViewSet):
             current_user = request.user
             customer: Customer = self.get_object()
 
-            user_cannot_edit_customer = services.is_support_team_user(user=current_user)
-            if user_cannot_edit_customer:
-                return Response({'message': 'You are not part of sales team'},
+            can_edit = \
+                current_user.is_management() or (current_user.is_sales() and customer.is_user_assigned(current_user))
+            if not can_edit:
+                return Response({'message': 'You are not authorize to edit this customer'},
                                 status=status.HTTP_403_FORBIDDEN)
 
-            sale_user_can_edit_customer = services.is_a_customer_assigned(user=current_user, customer=customer)
-            if not sale_user_can_edit_customer:
-                return Response({'message': 'Customer is not assigned to you.'}, status=status.HTTP_403_FORBIDDEN)
-
-            data = {
-                "first_name": request.POST.get('first_name', None),
-                "last_name": request.POST.get('last_name', None),
-                "email": request.POST.get('email', None),
-                "phone": request.POST.get('phone', None),
-                "mobile": request.POST.get('mobile', None),
-                "company_name": request.POST.get('company_name', None),
-                "status": request.POST.get('status', None),
-            }
             serializer = self.serializer_class(
                 instance=customer,
-                data=data,
+                data=request.data,
                 context={'user': current_user},
                 partial=True
             )
