@@ -21,8 +21,8 @@ class CustomerViewSet(ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         try:
-            users = list(Customer.objects.all().order_by("id"))
-            return Response(self.serializer_class(users, many=True).data, status=status.HTTP_200_OK)
+            customers = list(Customer.objects.all().order_by("id"))
+            return Response(self.serializer_class(customers, many=True).data, status=status.HTTP_200_OK)
 
         except ObjectDoesNotExist:
             return Response({'message': 'Customer does not exist'}, status=status.HTTP_404_NOT_FOUND)
