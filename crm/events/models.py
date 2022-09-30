@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 
+from users.models import User
 from customers.models import Customer
 
 
@@ -22,3 +23,6 @@ class Event(models.Model):
                               verbose_name="Event status")
     customer = models.ForeignKey(to=Customer, on_delete=models.CASCADE)
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    def is_user_assigned(self, user: User) -> bool:
+        return self.user == user
