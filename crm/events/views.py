@@ -110,3 +110,27 @@ class EventViewSet(ModelViewSet):
 
         except ObjectDoesNotExist:
             return Response({'message': 'Customer or event do not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    def destroy(self, request, customers_pk=None, pk=None, *args, **kwargs):
+        try:
+            current_user = request.user
+            customer = Customer.objects.filter(pk=customers_pk).get()
+            event = Event.objects.filter(pk=pk).get()
+
+            if not event.customer == customer:
+                return Response({'message': 'Event is not assigned to current customer'},
+                                status=status.HTTP_404_NOT_FOUND)
+
+            can_edit = \
+                current_user.is_management() \
+                or (current_user.is_sales() and customer.is_user_assigned(current_user)) \
+                or event.is_user_assigned(current_user)
+
+            if not can_edit:
+                return Response({'message': 'You are not authorize to edit this customer'},
+                                status=status.HTTP_403_FORBIDDEN)
+
+            return super(EventViewSet, self).destroy(request, customers_pk, *args, **kwargs)
+
+        except ObjectDoesNotExist:
+            return Response({'message': 'Customer or contract do not exist'}, status=status.HTTP_404_NOT_FOUND)
