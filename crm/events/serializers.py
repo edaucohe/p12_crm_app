@@ -17,3 +17,6 @@ class EventSerializer(ModelSerializer):
             'customer',
             'user',
         ]
+
+    def create(self, validated_data):
+        return Event.objects.create(**validated_data)
