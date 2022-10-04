@@ -1,3 +1,5 @@
+import logging
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 from rest_framework import status
@@ -10,6 +12,8 @@ from events.serializers import EventSerializer
 from customers.models import Customer
 from contracts.models import Contract
 from events.models import Event
+
+logging.basicConfig(level=logging.INFO)
 
 
 class EventViewSet(ModelViewSet):
@@ -31,6 +35,7 @@ class EventViewSet(ModelViewSet):
             user_support_assigned = event.is_user_assigned(current_user)
 
             if not (customer.is_user_assigned(current_user) or user_support_assigned):
+                logging.info(f"User '{current_user}' is not authorize to see these events")
                 return Response({'message': 'You are not authorize to see these events'},
                                 status=status.HTTP_403_FORBIDDEN)
 
@@ -38,11 +43,13 @@ class EventViewSet(ModelViewSet):
             events = sorted(events, key=lambda order_by: order_by.id)
 
             if not events:
+                logging.info(f"There is no events for '{customer}' ")
                 return Response({'message': 'There is no events for this customer'}, status=status.HTTP_404_NOT_FOUND)
 
             return Response(self.serializer_class(events, many=True).data, status=status.HTTP_200_OK)
 
         except ObjectDoesNotExist:
+            logging.info("Customer or event do not exist")
             return Response({'message': 'Customer or event do not exist'}, status=status.HTTP_404_NOT_FOUND)
 
     def create(self, request, customers_pk=None, *args, **kwargs):
@@ -57,6 +64,7 @@ class EventViewSet(ModelViewSet):
             user_support_assigned = event.is_user_assigned(current_user)
 
             if not (customer.is_user_assigned(current_user) or user_support_assigned):
+                logging.info(f"User '{current_user}' is not authorize to create an event for '{customer}' ")
                 return Response({'message': 'You are not authorize to see these events'},
                                 status=status.HTTP_403_FORBIDDEN)
 
@@ -75,6 +83,7 @@ class EventViewSet(ModelViewSet):
                 return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except ObjectDoesNotExist:
+            logging.info("Customer or event do not exist")
             return Response({'message': 'Customer or event do not exist'}, status=status.HTTP_404_NOT_FOUND)
 
     def update(self, request, customers_pk=None, pk=None, *args, **kwargs):
@@ -84,6 +93,7 @@ class EventViewSet(ModelViewSet):
             event = Event.objects.filter(pk=pk).get()
 
             if not event.customer == customer:
+                logging.info(f"Event '{event}' is not assigned to current {customer}")
                 return Response({'message': 'Event is not assigned to current customer'},
                                 status=status.HTTP_404_NOT_FOUND)
 
@@ -93,6 +103,7 @@ class EventViewSet(ModelViewSet):
                 or event.is_user_assigned(current_user)
 
             if not can_edit:
+                logging.info(f"User '{current_user}' is not authorize to edit '{customer}' ")
                 return Response({'message': 'You are not authorize to edit this customer'},
                                 status=status.HTTP_403_FORBIDDEN)
 
@@ -109,6 +120,7 @@ class EventViewSet(ModelViewSet):
                 return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except ObjectDoesNotExist:
+            logging.info("Customer or event do not exist")
             return Response({'message': 'Customer or event do not exist'}, status=status.HTTP_404_NOT_FOUND)
 
     def destroy(self, request, customers_pk=None, pk=None, *args, **kwargs):
@@ -118,6 +130,7 @@ class EventViewSet(ModelViewSet):
             event = Event.objects.filter(pk=pk).get()
 
             if not event.customer == customer:
+                logging.info(f"Event '{event}' is not assigned to current '{customer}' ")
                 return Response({'message': 'Event is not assigned to current customer'},
                                 status=status.HTTP_404_NOT_FOUND)
 
@@ -127,10 +140,12 @@ class EventViewSet(ModelViewSet):
                 or event.is_user_assigned(current_user)
 
             if not can_edit:
+                logging.info(f"User '{current_user}' is not authorize to edit '{customer}' ")
                 return Response({'message': 'You are not authorize to edit this customer'},
                                 status=status.HTTP_403_FORBIDDEN)
 
             return super(EventViewSet, self).destroy(request, customers_pk, *args, **kwargs)
 
         except ObjectDoesNotExist:
-            return Response({'message': 'Customer or contract do not exist'}, status=status.HTTP_404_NOT_FOUND)
+            logging.info("Customer or event do not exist")
+            return Response({'message': 'Customer or event do not exist'}, status=status.HTTP_404_NOT_FOUND)

@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
@@ -10,8 +12,9 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework.viewsets import ModelViewSet
 
 from users.models import User
-
 from users.serializers import UserSerializer, SignUpSerializer
+
+logging.basicConfig(level=logging.INFO)
 
 
 class SignUpViewSet(CreateAPIView):
@@ -36,12 +39,14 @@ class UserViewSet(ModelViewSet):
             return Response(self.serializer_class(users, many=True).data, status=status.HTTP_200_OK)
 
         except ObjectDoesNotExist:
+            logging.info("User do not exist")
             return Response({'message': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
     def create(self, request, *args, **kwargs):
         try:
             current_user = request.user
             if not current_user.role == User.Role.MANAGEMENT:
+                logging.info(f"User '{current_user}' is not authorize to create an user")
                 return Response({'message': 'You are not part of Management team'}, status=status.HTTP_403_FORBIDDEN)
             else:
                 data = {
@@ -57,4 +62,5 @@ class UserViewSet(ModelViewSet):
                     return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except ObjectDoesNotExist:
+            logging.info("User do not exist")
             return Response({'message': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)

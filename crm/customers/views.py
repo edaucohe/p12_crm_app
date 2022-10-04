@@ -1,3 +1,5 @@
+import logging
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 from rest_framework import status
@@ -9,6 +11,8 @@ from customers.serializers import CustomerSerializer
 
 from customers.models import Customer
 from users import services
+
+logging.basicConfig(level=logging.INFO)
 
 
 class CustomerViewSet(ModelViewSet):
@@ -25,11 +29,12 @@ class CustomerViewSet(ModelViewSet):
             return Response(self.serializer_class(customers, many=True).data, status=status.HTTP_200_OK)
 
         except ObjectDoesNotExist:
+            logging.info("Customer do not exist")
             return Response({'message': 'Customer does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
     def create(self, request, *args, **kwargs):
         current_user = request.user
-        if current_user.is_sales():
+        if current_user.is_sales() or current_user.is_management():
             data = {
                 "first_name": request.POST.get('first_name', None),
                 "last_name": request.POST.get('last_name', None),
@@ -49,6 +54,7 @@ class CustomerViewSet(ModelViewSet):
                 return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         else:
+            logging.info(f"User '{current_user}' is not authorize to create a customer")
             return Response({'message': 'You are not part of sales team'},
                             status=status.HTTP_403_FORBIDDEN)
 
@@ -60,6 +66,7 @@ class CustomerViewSet(ModelViewSet):
             can_edit = \
                 current_user.is_management() or (current_user.is_sales() and customer.is_user_assigned(current_user))
             if not can_edit:
+                logging.info(f"User '{current_user}' is not authorize to edit '{customer}' ")
                 return Response({'message': 'You are not authorize to edit this customer'},
                                 status=status.HTTP_403_FORBIDDEN)
 
@@ -76,6 +83,7 @@ class CustomerViewSet(ModelViewSet):
                 return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except ObjectDoesNotExist:
+            logging.info("Customer do not exist")
             return Response({'message': 'Customer does not exist'},
                             status=status.HTTP_404_NOT_FOUND)
 
@@ -87,11 +95,13 @@ class CustomerViewSet(ModelViewSet):
             can_edit = \
                 current_user.is_management() or (current_user.is_sales() and customer.is_user_assigned(current_user))
             if not can_edit:
+                logging.info(f"User '{current_user}' is not authorize to delete '{customer}' ")
                 return Response({'message': 'You are not authorize to edit this customer'},
                                 status=status.HTTP_403_FORBIDDEN)
 
             return super(CustomerViewSet, self).destroy(request, pk, *args, **kwargs)
 
         except ObjectDoesNotExist:
+            logging.info("Customer do not exist")
             return Response({'message': 'Customer does not exist'},
                             status=status.HTTP_404_NOT_FOUND)

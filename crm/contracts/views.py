@@ -1,3 +1,5 @@
+import logging
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 from rest_framework import status
@@ -10,6 +12,8 @@ from contracts.serializers import ContractSerializer
 from contracts.models import Contract
 from users import services
 from customers.models import Customer
+
+logging.basicConfig(level=logging.INFO)
 
 
 class ContractViewSet(ModelViewSet):
@@ -29,12 +33,14 @@ class ContractViewSet(ModelViewSet):
         #     return Response({'message': 'Customer is not assigned to you'}, status=status.HTTP_403_FORBIDDEN)
 
         if not customer.is_user_assigned(current_user):
+            logging.info(f"There is no contracts for '{customer}' ")
             return Response({'message': 'You are not authorize to see contracts'}, status=status.HTTP_403_FORBIDDEN)
 
         contracts = [contract for contract in Contract.objects.filter(customer=customer, user=current_user)]
         contracts = sorted(contracts, key=lambda order_by: order_by.id)
 
         if not contracts:
+            logging.info(f"User '{current_user}' does not have contracts")
             return Response({'message': 'Customer does not have contracts'}, status=status.HTTP_404_NOT_FOUND)
 
         return Response(self.serializer_class(contracts, many=True).data, status=status.HTTP_200_OK)
@@ -44,6 +50,7 @@ class ContractViewSet(ModelViewSet):
         customer = Customer.objects.filter(pk=customers_pk).get()
 
         if not customer.is_user_assigned(current_user):
+            logging.info(f"User '{current_user}' is not authorize to create a contract for '{customer}' ")
             return Response({'message': 'You are not authorize to create contracts'}, status=status.HTTP_403_FORBIDDEN)
 
         # user_can_create_contract = services.is_sale_team_user(user=current_user)
@@ -63,6 +70,7 @@ class ContractViewSet(ModelViewSet):
                 return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         else:
+            logging.info(f"User '{current_user}' is not authorize to create a contract")
             return Response({'message': 'You are not part of sales team'},
                             status=status.HTTP_403_FORBIDDEN)
 
@@ -73,6 +81,7 @@ class ContractViewSet(ModelViewSet):
             contract = Contract.objects.filter(pk=pk).get()
 
             if not contract.customer == customer:
+                logging.info(f"Contract '{contract}' is not assigned to current {customer}")
                 return Response({'message': 'Contract is not assigned to current customer'},
                                 status=status.HTTP_404_NOT_FOUND)
 
@@ -88,6 +97,7 @@ class ContractViewSet(ModelViewSet):
             can_edit = \
                 current_user.is_management() or (current_user.is_sales() and customer.is_user_assigned(current_user))
             if not can_edit:
+                logging.info(f"User '{current_user}' is not authorize to create a contract")
                 return Response({'message': 'You are not authorize to edit this customer'},
                                 status=status.HTTP_403_FORBIDDEN)
 
@@ -109,6 +119,7 @@ class ContractViewSet(ModelViewSet):
                 return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except ObjectDoesNotExist:
+            logging.info("Customer or contract do not exist")
             return Response({'message': 'Customer or contract do not exist'}, status=status.HTTP_404_NOT_FOUND)
 
     def destroy(self, request, pk=None, customers_pk=None, *args, **kwargs):
@@ -118,17 +129,20 @@ class ContractViewSet(ModelViewSet):
             contract = Contract.objects.filter(pk=pk).get()
 
             if not contract.customer == customer:
+                logging.info(f"Contract '{contract}' is not assigned to current {customer}")
                 return Response({'message': 'Contract is not assigned to current customer'},
                                 status=status.HTTP_404_NOT_FOUND)
 
             can_edit = \
                 current_user.is_management() or (current_user.is_sales() and customer.is_user_assigned(current_user))
             if not can_edit:
-                return Response({'message': 'You are not authorize to edit this customer'},
+                logging.info(f"User '{current_user}' is not authorize to delete this contract")
+                return Response({'message': 'You are not authorize to delete this contract'},
                                 status=status.HTTP_403_FORBIDDEN)
 
             return super(ContractViewSet, self).destroy(request, customers_pk, *args, **kwargs)
 
         except ObjectDoesNotExist:
+            logging.info("Customer or contract do not exist")
             return Response({'message': 'Customer or contract do not exist'}, status=status.HTTP_404_NOT_FOUND)
 
