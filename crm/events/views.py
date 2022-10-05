@@ -2,6 +2,7 @@ import logging
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -13,6 +14,8 @@ from customers.models import Customer
 from contracts.models import Contract
 from events.models import Event
 
+from events.filters import EventFilterSet
+
 logging.basicConfig(level=logging.INFO)
 
 
@@ -20,6 +23,9 @@ class EventViewSet(ModelViewSet):
     serializer_class = EventSerializer
     permission_classes = (IsAuthenticated,)
     http_method_names = ['get', 'post', 'put', 'delete']
+
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = EventFilterSet
 
     def get_queryset(self):
         return Event.objects.all()
@@ -34,17 +40,18 @@ class EventViewSet(ModelViewSet):
             event = list(Event.objects.filter(customer=customers_pk))[0]
             user_support_assigned = event.is_user_assigned(current_user)
 
-            if not (customer.is_user_assigned(current_user) or user_support_assigned):
+            if not (customer.is_user_assigned(current_user) or user_support_assigned or current_user.is_management()):
                 logging.info(f"User '{current_user}' is not authorize to see these events")
                 return Response({'message': 'You are not authorize to see these events'},
                                 status=status.HTTP_403_FORBIDDEN)
 
-            events = [event for event in Event.objects.filter(customer=customer)]
-            events = sorted(events, key=lambda order_by: order_by.id)
+            # events = [event for event in Event.objects.filter(customer=customer)]
+            # events = sorted(events, key=lambda order_by: order_by.id)
+            events = self.filter_queryset(self.get_queryset())
 
-            if not events:
-                logging.info(f"There is no events for '{customer}' ")
-                return Response({'message': 'There is no events for this customer'}, status=status.HTTP_404_NOT_FOUND)
+            # if not events:
+            #     logging.info(f"There is no events for '{customer}' ")
+            #     return Response({'message': 'There is no events for this customer'}, status=status.HTTP_404_NOT_FOUND)
 
             return Response(self.serializer_class(events, many=True).data, status=status.HTTP_200_OK)
 
