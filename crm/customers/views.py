@@ -2,6 +2,7 @@ import logging
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -12,6 +13,8 @@ from customers.serializers import CustomerSerializer
 from customers.models import Customer
 from users import services
 
+from customers.filters import CustomerFilterSet
+
 logging.basicConfig(level=logging.INFO)
 
 
@@ -20,12 +23,16 @@ class CustomerViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     http_method_names = ['get', 'post', 'put', 'delete']
 
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = CustomerFilterSet
+
     def get_queryset(self):
         return Customer.objects.all()
 
     def list(self, request, *args, **kwargs):
         try:
-            customers = list(Customer.objects.all().order_by("id"))
+            # customers = list(Customer.objects.all().order_by("id"))
+            customers = self.filter_queryset(self.get_queryset())
             return Response(self.serializer_class(customers, many=True).data, status=status.HTTP_200_OK)
 
         except ObjectDoesNotExist:
