@@ -2,6 +2,7 @@ import logging
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -13,6 +14,8 @@ from contracts.models import Contract
 from users import services
 from customers.models import Customer
 
+from contracts.filters import ContractFilterSet
+
 logging.basicConfig(level=logging.INFO)
 
 
@@ -20,6 +23,9 @@ class ContractViewSet(ModelViewSet):
     serializer_class = ContractSerializer
     permission_classes = (IsAuthenticated,)
     http_method_names = ['get', 'post', 'put', 'delete']
+
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = ContractFilterSet
 
     def get_queryset(self):
         return Contract.objects.all()
@@ -32,16 +38,17 @@ class ContractViewSet(ModelViewSet):
         # if not sale_user_can_see_contracts:
         #     return Response({'message': 'Customer is not assigned to you'}, status=status.HTTP_403_FORBIDDEN)
 
-        if not customer.is_user_assigned(current_user):
+        if not (customer.is_user_assigned(current_user) or current_user.is_management()):
             logging.info(f"There is no contracts for '{customer}' ")
             return Response({'message': 'You are not authorize to see contracts'}, status=status.HTTP_403_FORBIDDEN)
 
-        contracts = [contract for contract in Contract.objects.filter(customer=customer, user=current_user)]
-        contracts = sorted(contracts, key=lambda order_by: order_by.id)
+        # contracts = [contract for contract in Contract.objects.filter(customer=customer, user=current_user)]
+        # contracts = sorted(contracts, key=lambda order_by: order_by.id)
+        contracts = self.filter_queryset(self.get_queryset())
 
-        if not contracts:
-            logging.info(f"User '{current_user}' does not have contracts")
-            return Response({'message': 'Customer does not have contracts'}, status=status.HTTP_404_NOT_FOUND)
+        # if not contracts:
+        #     logging.info(f"User '{current_user}' does not have contracts")
+        #     return Response({'message': 'Customer does not have contracts'}, status=status.HTTP_404_NOT_FOUND)
 
         return Response(self.serializer_class(contracts, many=True).data, status=status.HTTP_200_OK)
 
