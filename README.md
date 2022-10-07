@@ -67,10 +67,16 @@ pip install -r requirements.txt
 
 ## Use <a class="anchor" id="use"></a>
 
+### Launch and stop local server
+
 To start API, go into the folder `../p12_crm_app/crm/` and launch:
 ```
 python manage.py runserver  
 ```
+
+If you want to stop local server, type *ctrl + c* in terminal.
+
+### Endpoints
 
 Concerning endpoints, they are formed by the root `http://127.0.0.1:8000/` followed by an URI. 
 You can find here below the main URI list:
@@ -96,14 +102,14 @@ You can find here below the main URI list:
 
 Also, you can find here below exemples of URI concerning filters. 
 
-**Customer filters**:
+**Customer filters:**
 
 | #   |    Functionality    | HTTP Request |                   URI                    |
 |-----|:-------------------:|:------------:|:----------------------------------------:|
 | 17  | Company name filter |     GET      | /customers/?company_name=johnny+company  |
 | 18  |    Email filter     |     GET      |          /customers/?email=tony          |
 
-**Contract filters**:
+**Contract filters:**
 
 | #   |     Functionality     | HTTP Request |                        URI                        |
 |-----|:---------------------:|:------------:|:-------------------------------------------------:|
@@ -112,7 +118,7 @@ Also, you can find here below exemples of URI concerning filters.
 | 21  |   Min amount filter   |     GET      |      /customers/2/contracts/?min_amount=100       |
 | 22  |  Payment due filter   |     GET      |  /customers/2/contracts/?payment_due=2022-10-30   |
 
-**Contract filters**:
+**Contract filters:**
 
 | #   |     Functionality     | HTTP Request |                      URI                       |
 |-----|:---------------------:|:------------:|:----------------------------------------------:|
@@ -120,8 +126,27 @@ Also, you can find here below exemples of URI concerning filters.
 | 24  | Customer email filter |     GET      |   /customers/2/events/?email=tony%40tony.com   |
 | 25  |   Event date filter   |     GET      |   /customers/2/events/?event_date=2023-01-30   |
 
-So, when local server is launched, you can go to your Postman account and test endpoints 
-according to API documentation (See [Helpful links](#links)).
+When local server is launched, you can go to your Postman account and test endpoints 
+according to **API documentation** (See [Helpful links](#links)).
+
+### User access
+
+Concerning management users already registered in DB, you can find here below their contact details 
+in order to access to **Admin page** (See [Helpful links](#links)):
+
+| Username |  Password   | User role  |
+|:--------:|:-----------:|:----------:|
+|  admin   |   hiadmin   | Management |
+|   anne   | SECRETanne. | Management |
+
+Concerning sales and support users already registered in DB, you can find here below their contact details 
+in order to access thanks to Postman:
+
+| Username |   Password   | User role |
+|:--------:|:------------:|:---------:|
+|   mari   | SECRETmari.  |   Sales   |
+|  manon   | SECRETmanon. |   Sales   |
+|   john   | SECRETjohn.  |  Support  |
 
 ## Helpful links <a class="anchor" id="links"></a>
 
@@ -145,3 +170,6 @@ https://django-filter.readthedocs.io/en/stable/index.html
 
 API documentation:
 https://documenter.getpostman.com/view/22241212/2s83zfR64P
+
+Admin page:
+http://127.0.0.1:8000/admin/login/?next=/admin/
