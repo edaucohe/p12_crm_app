@@ -67,9 +67,14 @@ pip install -r requirements.txt
 
 ## Use <a class="anchor" id="use"></a>
 
-### Launch and stop local server
+### Launch and stop the app
 
-To start API, go into the folder `../p12_crm_app/crm/` and launch:
+To use BD registered, go into the folder `../p12_crm_app/crm/` and launch:
+```
+python manage.py migrate  
+```
+
+To start API, into the same folder launch:
 ```
 python manage.py runserver  
 ```
