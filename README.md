@@ -47,7 +47,7 @@ Python version : 3.9.4
 
 To get project, launch :
 ```
-git clone https://github.com/edaucohe/p10_api_issues_app.git
+git clone https://github.com/edaucohe/p12_crm_app.git
 ```
 
 To create virtual environment, go into the folder `../p12_crm_app/` and launch :
