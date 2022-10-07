@@ -1,7 +1,6 @@
 import logging
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -9,10 +8,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from customers.serializers import CustomerSerializer
-
 from customers.models import Customer
-from users import services
-
 from customers.filters import CustomerFilterSet
 
 logging.basicConfig(level=logging.INFO)
@@ -31,12 +27,10 @@ class CustomerViewSet(ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         try:
-            # customers = list(Customer.objects.all().order_by("id"))
             customers = self.filter_queryset(self.get_queryset())
             return Response(self.serializer_class(customers, many=True).data, status=status.HTTP_200_OK)
 
         except ObjectDoesNotExist:
-            logging.info("Customer do not exist")
             return Response({'message': 'Customer does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
     def create(self, request, *args, **kwargs):
@@ -51,8 +45,7 @@ class CustomerViewSet(ModelViewSet):
                 "company_name": request.POST.get('company_name', None),
                 "user": current_user.pk,
                 }
-            # data = request.data | {"user": [current_user.pk]}
-            # data_requested = dict(request.data)
+
             serializer = self.serializer_class(data=data, context={'user': current_user})
             if serializer.is_valid():
                 serializer.save()
@@ -90,7 +83,6 @@ class CustomerViewSet(ModelViewSet):
                 return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except ObjectDoesNotExist:
-            logging.info("Customer do not exist")
             return Response({'message': 'Customer does not exist'},
                             status=status.HTTP_404_NOT_FOUND)
 
@@ -109,6 +101,5 @@ class CustomerViewSet(ModelViewSet):
             return super(CustomerViewSet, self).destroy(request, pk, *args, **kwargs)
 
         except ObjectDoesNotExist:
-            logging.info("Customer do not exist")
             return Response({'message': 'Customer does not exist'},
                             status=status.HTTP_404_NOT_FOUND)

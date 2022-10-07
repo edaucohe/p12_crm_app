@@ -34,8 +34,7 @@ router.register(r'customers', CustomerViewSet, basename='customers')
 customer_router = routers.NestedSimpleRouter(router, r'customers', lookup='customers')
 customer_router.register(r'contracts', ContractViewSet, basename='contracts')
 
-# /customers/{id}/contracts/{id}/events/   ||   /customers/{id}/contracts/{id}/events/{id}/
-# contract_router = routers.NestedSimpleRouter(customer_router, r'contracts', lookup='contracts')
+# /customers/{id}/events/   ||   /customers/{id}/events/{id}/
 customer_router.register(r'events', EventViewSet, basename='events')
 
 urlpatterns = [
@@ -45,5 +44,4 @@ urlpatterns = [
     path('signup/', SignUpViewSet.as_view(), name='signup'),
     path(r'', include(router.urls)),
     path(r'', include(customer_router.urls)),
-    # path(r'', include(contract_router.urls)),
 ]

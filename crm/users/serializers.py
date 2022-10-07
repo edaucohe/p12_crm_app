@@ -1,8 +1,6 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import make_password
 from django.contrib.auth.password_validation import validate_password
-from rest_framework.serializers import ModelSerializer, CharField, EmailField, ValidationError
-from rest_framework.validators import UniqueValidator
+from rest_framework.serializers import ModelSerializer, CharField, ValidationError
 
 
 class UserSerializer(ModelSerializer):
@@ -41,9 +39,3 @@ class SignUpSerializer(ModelSerializer):
         user.save()
 
         return user
-
-
-# class UserDetailsSerializer(ModelSerializer):
-#     class Meta:
-#         model = get_user_model()
-#         fields = ['id', 'username', 'role']

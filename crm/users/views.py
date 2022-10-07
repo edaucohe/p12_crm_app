@@ -2,13 +2,10 @@ import logging
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import render
 from rest_framework import status
-from rest_framework.decorators import action
 from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from rest_framework.serializers import ModelSerializer
 from rest_framework.viewsets import ModelViewSet
 
 from users.models import User
@@ -39,7 +36,6 @@ class UserViewSet(ModelViewSet):
             return Response(self.serializer_class(users, many=True).data, status=status.HTTP_200_OK)
 
         except ObjectDoesNotExist:
-            logging.info("User do not exist")
             return Response({'message': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
     def create(self, request, *args, **kwargs):
@@ -62,5 +58,4 @@ class UserViewSet(ModelViewSet):
                     return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except ObjectDoesNotExist:
-            logging.info("User do not exist")
             return Response({'message': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
