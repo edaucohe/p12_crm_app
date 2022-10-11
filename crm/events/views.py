@@ -32,6 +32,10 @@ class EventViewSet(ModelViewSet):
         try:
             current_user = request.user
             customer = Customer.objects.filter(pk=customers_pk).get()
+            if not Event.objects.filter(customer=customers_pk):
+                logging.info(f"There is no events for user {current_user}")
+                return Response({'message': 'There is no events'}, status=status.HTTP_403_FORBIDDEN)
+
             event = list(Event.objects.filter(customer=customers_pk))[0]
             user_support_assigned = event.is_user_assigned(current_user)
 
@@ -40,11 +44,11 @@ class EventViewSet(ModelViewSet):
                 return Response({'message': 'You are not authorize to see these events'},
                                 status=status.HTTP_403_FORBIDDEN)
 
-            events = self.filter_queryset(self.get_queryset())
-            return Response(self.serializer_class(events, many=True).data, status=status.HTTP_200_OK)
+            events = list(self.filter_queryset(self.get_queryset()))
+            own_events = [event for event in events if event.customer == customer]
+            return Response(self.serializer_class(own_events, many=True).data, status=status.HTTP_200_OK)
 
         except ObjectDoesNotExist:
-            logging.info("Customer or event do not exist")
             return Response({'message': 'Customer or event do not exist'}, status=status.HTTP_404_NOT_FOUND)
 
     def create(self, request, customers_pk=None, *args, **kwargs):
@@ -52,10 +56,10 @@ class EventViewSet(ModelViewSet):
             current_user = request.user
             customer = Customer.objects.filter(pk=customers_pk).get()
 
-            event = list(Event.objects.filter(customer=customers_pk))[0]
-            user_support_assigned = event.is_user_assigned(current_user)
+            # event = list(Event.objects.filter(customer=customers_pk))[0]
+            # user_support_assigned = event.is_user_assigned(current_user)
 
-            if not (customer.is_user_assigned(current_user) or user_support_assigned):
+            if not (customer.is_user_assigned(current_user)):
                 logging.info(f"User '{current_user}' is not authorize to create an event for '{customer}' ")
                 return Response({'message': 'You are not authorize to see these events'},
                                 status=status.HTTP_403_FORBIDDEN)
@@ -65,7 +69,7 @@ class EventViewSet(ModelViewSet):
                 "event_date": request.POST.get('event_date', None),
                 "notes": request.POST.get('notes', None),
                 "customer": customer.pk,
-                "user": event.user.pk,
+                "user": request.POST.get('user', None),
             }
             serializer = self.serializer_class(data=data, context={'user': current_user})
             if serializer.is_valid():
