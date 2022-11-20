@@ -86,22 +86,23 @@ If you want to stop local server, type *ctrl + c* in terminal.
 Concerning endpoints, they are formed by the root `http://127.0.0.1:8000/` followed by an URI. 
 You can find here below the main URI list:
 
-| #   |    Functionality     | HTTP Request |                    URI                    |
-|-----|:--------------------:|:------------:|:-----------------------------------------:|
-| 1   |      User login      |     POST     |                  /login/                  |
-| 2   |      User list       |     GET      |                  /users/                  |
-| 3   |    Customer list     |     GET      |                /customers/                |
-| 4   |   Create customer    |     POST     |                /customers/                |
-| 5   | Update customer info |     PUT      |             /customers/{id}/              |
-| 6   |   Delete customer    |    DELETE    |             /customers/{id}/              |
-| 7   |    Contract list     |     GET      |        /customers/{id}/contracts/         |
-| 8   |   Create contract    |     POST     |        /customers/{id}/contracts/         |
-| 9   |   Update contract    |     PUT      |      /customers/{id}/contracts/{id}       |
-| 10  |   Delete contract    |    DELETE    |      /customers/{id}/contracts/{id}       |
-| 11  |      Event list      |     GET      |          /customers/{id}/events/          |
-| 12  |     Create event     |     POST     |          /customers/{id}/events/          |
-| 13  |     Update event     |     PUT      |        /customers/{id}/events/{id}        |
-| 14  |     Delete event     |    DELETE    |        /customers/{id}/events/{id}        |
+| #   |    Functionality     | HTTP Request |                    URI                     |
+|-----|:--------------------:|:------------:|:------------------------------------------:|
+| 1   |      User login      |     POST     |                  /login/                   |
+| 2   |      User list       |     GET      |                  /users/                   |
+| 3   |    Customer list     |     GET      |                /customers/                 |
+| 4   |   Create customer    |     POST     |                /customers/                 |
+| 5   | Update customer info |     PUT      |              /customers/{id}/              |
+| 6   |   Delete customer    |    DELETE    |              /customers/{id}/              |
+| 7   |    Contract list     |     GET      |         /customers/{id}/contracts/         |
+| 8   |   Create contract    |     POST     |         /customers/{id}/contracts/         |
+| 9   |   Update contract    |     PUT      |       /customers/{id}/contracts/{id}       |
+| 10  |   Delete contract    |    DELETE    |       /customers/{id}/contracts/{id}       |
+| 11  |  Display event list  |     GET      |          /customers/{id}/events/           |
+| 12  |    Display event     |     GET      |   /customers/{id}/contracts/{id}/events/   |
+| 13  |     Create event     |     POST     |   /customers/{id}/contracts/{id}/events/   |
+| 14  |     Update event     |     PUT      | /customers/{id}/contracts/{id}/events/{id} |
+| 15  |     Delete event     |    DELETE    | /customers/{id}/contracts/{id}/events/{id} |
 
 Also, you can find here below exemples of URI concerning filters. 
 
@@ -109,25 +110,25 @@ Also, you can find here below exemples of URI concerning filters.
 
 | #   |    Functionality    | HTTP Request |                   URI                    |
 |-----|:-------------------:|:------------:|:----------------------------------------:|
-| 15  | Company name filter |     GET      | /customers/?company_name=johnny+company  |
-| 16  |    Email filter     |     GET      |          /customers/?email=tony          |
+| 16  | Company name filter |     GET      | /customers/?company_name=johnny+company  |
+| 17  |    Email filter     |     GET      |          /customers/?email=tony          |
 
 **Contract filters:**
 
 | #   |     Functionality     | HTTP Request |                        URI                        |
 |-----|:---------------------:|:------------:|:-------------------------------------------------:|
-| 17  |  Company name filter  |     GET      | /customers/2/contracts/?company_name=tony+company |
-| 18  | Customer email filter |     GET      |   /customers/2/contracts/?email=tony%40tony.com   |
-| 19  |   Min amount filter   |     GET      |      /customers/2/contracts/?min_amount=100       |
-| 20  |  Payment due filter   |     GET      |  /customers/2/contracts/?payment_due=2022-10-30   |
+| 18  |  Company name filter  |     GET      | /customers/2/contracts/?company_name=tony+company |
+| 19  | Customer email filter |     GET      |   /customers/2/contracts/?email=tony%40tony.com   |
+| 20  |   Min amount filter   |     GET      |      /customers/2/contracts/?min_amount=100       |
+| 22  |  Payment due filter   |     GET      |  /customers/2/contracts/?payment_due=2022-10-30   |
 
 **Contract filters:**
 
 | #   |     Functionality     | HTTP Request |                      URI                       |
 |-----|:---------------------:|:------------:|:----------------------------------------------:|
-| 21  |  Company name filter  |     GET      | /customers/2/events/?company_name=tony+company |
-| 22  | Customer email filter |     GET      |   /customers/2/events/?email=tony%40tony.com   |
-| 23  |   Event date filter   |     GET      |   /customers/2/events/?event_date=2023-01-30   |
+| 22  |  Company name filter  |     GET      | /customers/2/events/?company_name=tony+company |
+| 23  | Customer email filter |     GET      |   /customers/2/events/?email=tony%40tony.com   |
+| 24  |   Event date filter   |     GET      |   /customers/2/events/?event_date=2023-01-30   |
 
 When local server is launched, you can go to your Postman account and test endpoints 
 according to **API documentation** (See [Helpful links](#links)).
