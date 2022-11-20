@@ -11,10 +11,10 @@ class User(AbstractUser):
     role = models.CharField(max_length=25, choices=Role.choices, verbose_name='role')
 
     def is_management(self):
-        return self.role == self.Role.MANAGEMENT
+        return self.groups.filter(name="Management").exists()
 
-    def is_sales(self):
-        return self.role == self.Role.SALE
+    def is_sale(self):
+        return self.groups.filter(name="Sale").exists()
 
     def is_support(self):
-        return self.role == self.Role.SUPPORT
+        return self.groups.filter(name="Support").exists()

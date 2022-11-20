@@ -3,6 +3,7 @@ from django.db import models
 
 from users.models import User
 from customers.models import Customer
+from contracts.models import Contract
 
 
 class Event(models.Model):
@@ -23,6 +24,10 @@ class Event(models.Model):
                               verbose_name="Event status")
     customer = models.ForeignKey(to=Customer, on_delete=models.CASCADE)
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    contract = models.OneToOneField(to=Contract,
+                                    on_delete=models.CASCADE,
+                                    blank=True,
+                                    null=True)
 
     def is_user_assigned(self, user: User) -> bool:
         return self.user == user

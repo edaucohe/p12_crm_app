@@ -17,3 +17,6 @@ class Contract(models.Model):
 
     def is_user_assigned(self, user: User) -> bool:
         return self.user == user
+
+    def is_signed(self) -> bool:
+        return self.status is True

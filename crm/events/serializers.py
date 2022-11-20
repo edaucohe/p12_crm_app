@@ -15,6 +15,7 @@ class EventSerializer(ModelSerializer):
             'notes',
             'customer',
             'user',
+            'contract',
         ]
 
     def create(self, validated_data):
