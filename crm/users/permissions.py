@@ -17,7 +17,7 @@ class EditUserPermission(BasePermission):
         if request.method == 'GET' and management_user:
             return True
         else:
-            logging.info(f"User '{user}' is not authorize to see list of users")
+            logging.warning(f"User '{user}' is not authorize to see list of users")
             return False
 
 
@@ -32,14 +32,14 @@ class EditCustomerPermission(BasePermission):
             if management_user or sale_user or support_user:
                 return True
             else:
-                logging.info(f"User '{user}' should be part of a group")
+                logging.warning(f"User '{user}' should be part of a group")
                 return False
 
         elif request.method == 'POST':
             if management_user or sale_user:
                 return True
             else:
-                logging.info(f"User '{user}' is not authorize to edit this customer")
+                logging.warning(f"User '{user}' is not authorize to edit this customer")
                 return False
 
         else:
@@ -54,7 +54,7 @@ class EditCustomerPermission(BasePermission):
             if management_user or sale_user_assigned:
                 return True
             else:
-                logging.info(f"User '{user}' is not authorize to edit this customer")
+                logging.warning(f"User '{user}' is not authorize to edit this customer")
                 return False
         else:
             return False
@@ -75,14 +75,14 @@ class EditContractPermission(BasePermission):
             if management_user or sale_user or support_user:
                 return True
             else:
-                logging.info(f"User '{user}' should be part of a group")
+                logging.warning(f"User '{user}' should be part of a group")
                 return False
 
         elif request.method == 'POST' or request.method == 'PUT' or request.method == 'DELETE':
             if management_user or sale_user_assigned:
                 return True
             else:
-                logging.info(f"User '{user}' is not authorize to edit this customer")
+                logging.warning(f"User '{user}' is not authorize to edit this contract")
                 return False
         else:
             return False
@@ -103,14 +103,14 @@ class EditEventPermission(BasePermission):
             if management_user or sale_user or support_user:
                 return True
             else:
-                logging.info(f"User '{user}' should be part of a group")
+                logging.warning(f"User '{user}' should be part of a group")
                 return False
 
         elif request.method == 'POST':
             if management_user or sale_user_assigned:
                 return True
             else:
-                logging.info(f"User '{user}' is not authorize to edit this customer")
+                logging.warning(f"User '{user}' is not authorize to edit this event")
                 return False
         elif request.method == 'PUT' or request.method == 'DELETE':
             event_pk = int(view.kwargs.get('pk', None))
@@ -121,10 +121,10 @@ class EditEventPermission(BasePermission):
                 if management_user or sale_user_assigned or support_user_assigned:
                     return True
                 else:
-                    logging.info(f"User '{user}' is not authorize to edit this customer")
+                    logging.warning(f"User '{user}' is not authorize to edit this event")
                     return False
             except ObjectDoesNotExist:
-                logging.info(f"Event does not exist")
+                logging.warning(f"Event does not exist")
                 return Response(status=status.HTTP_404_NOT_FOUND)
         else:
             return False
@@ -141,7 +141,7 @@ class DisplayEventsPermission(BasePermission):
             if management_user or sale_user or support_user:
                 return True
             else:
-                logging.info(f"User '{user}' should be part of a group")
+                logging.warning(f"User '{user}' should be part of a group")
                 return False
         else:
             return False

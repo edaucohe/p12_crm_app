@@ -24,10 +24,9 @@ class Event(models.Model):
                               verbose_name="Event status")
     customer = models.ForeignKey(to=Customer, on_delete=models.CASCADE)
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    contract = models.OneToOneField(to=Contract,
-                                    on_delete=models.CASCADE,
-                                    blank=True,
-                                    null=True)
+    contract = models.ForeignKey(to=Contract,
+                                 on_delete=models.CASCADE,
+                                 null=False)
 
     def is_user_assigned(self, user: User) -> bool:
         return self.user == user

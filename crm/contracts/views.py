@@ -36,7 +36,7 @@ class ContractViewSet(ModelViewSet):
             customer = Customer.objects.filter(pk=customers_pk).get()
             if not Contract.objects.filter(customer=customers_pk):
                 logging.info(f"There is no contracts for user {current_user}")
-                return Response({'message': 'There is no contracts'}, status=status.HTTP_403_FORBIDDEN)
+                return Response({'message': 'There is no contracts'}, status=status.HTTP_404_NOT_FOUND)
 
             contracts = list(self.filter_queryset(self.get_queryset()))
             own_contracts = [contract for contract in contracts if contract.customer == customer]
@@ -76,7 +76,7 @@ class ContractViewSet(ModelViewSet):
             if not contract.customer == customer:
                 logging.info(f"Contract '{contract}' is not assigned to current {customer}")
                 return Response({'message': 'Contract is not assigned to current customer'},
-                                status=status.HTTP_406_NOT_ACCEPTABLE)
+                                status=status.HTTP_404_NOT_FOUND)
 
             serializer = self.serializer_class(
                 instance=contract,
@@ -100,7 +100,7 @@ class ContractViewSet(ModelViewSet):
             if not contract.customer == customer:
                 logging.info(f"Contract '{contract}' is not assigned to current {customer}")
                 return Response({'message': 'Contract is not assigned to current customer'},
-                                status=status.HTTP_406_NOT_ACCEPTABLE)
+                                status=status.HTTP_404_NOT_FOUND)
 
             return super(ContractViewSet, self).destroy(request, customers_pk, *args, **kwargs)
 

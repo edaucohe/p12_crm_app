@@ -36,18 +36,13 @@ class EventOfContractViewSet(ModelViewSet):
         try:
             customer = Customer.objects.filter(pk=customers_pk).get()
             contract = Contract.objects.filter(pk=contracts_pk).get()
-            if not Event.objects.filter(contract=contract):
-                logging.info(f"There is no events for this contract")
-                return Response({'message': 'There is no events'}, status=status.HTTP_404_NOT_FOUND)
-
             if not contract.customer == customer:
                 logging.info(f"'{customer}' does not have this '{contract}'")
                 return Response({'message': 'Contract does not match with Customer'},
-                                status=status.HTTP_406_NOT_ACCEPTABLE)
+                                status=status.HTTP_404_NOT_FOUND)
 
-            events = list(self.filter_queryset(self.get_queryset()))
-            own_event = [event for event in events if event.contract == contract]
-            return Response(self.serializer_class(own_event, many=True).data, status=status.HTTP_200_OK)
+            events = list(Event.objects.filter(contract=contract))
+            return Response(self.serializer_class(events, many=True).data, status=status.HTTP_200_OK)
 
         except ObjectDoesNotExist:
             return Response({'message': 'Customer or event do not exist'}, status=status.HTTP_404_NOT_FOUND)
@@ -57,10 +52,11 @@ class EventOfContractViewSet(ModelViewSet):
             current_user = request.user
             customer = Customer.objects.filter(pk=customers_pk).get()
             contract = Contract.objects.filter(pk=contracts_pk).get()
+
             if not contract.customer == customer:
                 logging.info(f"'{customer}' does not have this '{contract}'")
                 return Response({'message': 'Contract does not match with Customer'},
-                                status=status.HTTP_406_NOT_ACCEPTABLE)
+                                status=status.HTTP_404_NOT_FOUND)
 
             if not contract.is_signed():
                 logging.info(f"'{contract}' should be signed before event creation")
@@ -70,9 +66,9 @@ class EventOfContractViewSet(ModelViewSet):
                 "attendees": request.POST.get('attendees', None),
                 "event_date": request.POST.get('event_date', None),
                 "notes": request.POST.get('notes', None),
-                "customer": int(customers_pk),
+                "customer": customer.pk,
                 "user": request.POST.get('user', None),
-                "contract": int(contracts_pk),
+                "contract": contract.pk,
             }
             serializer = self.serializer_class(data=data, context={'user': current_user})
             if serializer.is_valid():
@@ -93,13 +89,13 @@ class EventOfContractViewSet(ModelViewSet):
             if not event.customer == customer:
                 logging.info(f"Event '{event}' is not assigned to current {customer}")
                 return Response({'message': 'Event is not assigned to current customer'},
-                                status=status.HTTP_406_NOT_ACCEPTABLE)
+                                status=status.HTTP_404_NOT_FOUND)
 
             contract = Contract.objects.filter(pk=contracts_pk).get()
             if not event.contract == contract:
                 logging.info(f"Event '{event}' is not assigned to current {contract}")
                 return Response({'message': 'Event is not assigned to current contract'},
-                                status=status.HTTP_406_NOT_ACCEPTABLE)
+                                status=status.HTTP_404_NOT_FOUND)
 
             serializer = self.serializer_class(
                 instance=event,
@@ -124,13 +120,13 @@ class EventOfContractViewSet(ModelViewSet):
             if not event.customer == customer:
                 logging.info(f"Event '{event}' is not assigned to current {customer}")
                 return Response({'message': 'Event is not assigned to current customer'},
-                                status=status.HTTP_406_NOT_ACCEPTABLE)
+                                status=status.HTTP_404_NOT_FOUND)
 
             contract = Customer.objects.filter(pk=contracts_pk).get()
             if not event.contract == contract:
                 logging.info(f"Event '{event}' is not assigned to current {contract}")
                 return Response({'message': 'Event is not assigned to current contract'},
-                                status=status.HTTP_406_NOT_ACCEPTABLE)
+                                status=status.HTTP_404_NOT_FOUND)
 
             return super(EventOfContractViewSet, self).destroy(request, customers_pk, *args, **kwargs)
 
